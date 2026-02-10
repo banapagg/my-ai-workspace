@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"/c/Program Files/GitHub CLI:$PATH\")",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh project item-add:*)",
+      "Bash(gh project item-edit:*)",
+      "Bash(gh issue close:*)",
+      "Bash(export PATH=\"/c/Users/stkn1/AppData/Local/Python/pythoncore-3.14-64/Scripts:$PATH\")",
+      "Bash(gcalcli init:*)",
+      "Bash(gcalcli --help:*)",
+      "Bash(gcalcli:*)",
+      "Bash(git clone:*)"
+    ]
+  }
+}
