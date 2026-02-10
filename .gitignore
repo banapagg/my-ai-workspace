@@ -1,0 +1,24 @@
+# 環境変数
+.env
+.env.local
+
+# 依存関係
+node_modules/
+venv/
+__pycache__/
+
+# IDE設定
+.vscode/
+.idea/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# ログファイル
+*.log
+
+# ビルド成果物
+dist/
+build/
+*.pyc
