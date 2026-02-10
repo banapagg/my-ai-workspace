@@ -6,7 +6,11 @@ Orchestrator - タスクを分析し、適切なワーカーに委譲する
 """
 
 import json
+import sys
+import os
+import importlib.util
 from typing import Dict, List, Any
+from pathlib import Path
 
 
 class Orchestrator:
@@ -16,7 +20,9 @@ class Orchestrator:
         """初期化"""
         self.config = self._load_config(config_path)
         self.workers = {}
+        self.worker_instances = {}
         self.model_mapping = self._load_model_mapping()
+        self.base_path = Path(__file__).parent.parent  # sub-agents/
         self._register_workers()
 
     def _load_config(self, config_path: str) -> Dict:
@@ -64,6 +70,43 @@ class Orchestrator:
         for worker_name, worker_config in self.config["workers"].items():
             if worker_config["enabled"]:
                 self.workers[worker_name] = worker_config
+
+    def _load_worker(self, worker_name: str):
+        """ワーカーモジュールを動的にロード"""
+        if worker_name in self.worker_instances:
+            return self.worker_instances[worker_name]
+
+        try:
+            # workers/worker_name/worker.py を探す
+            worker_path = self.base_path / "workers" / worker_name / "worker.py"
+
+            if not worker_path.exists():
+                print(f"   [!] ワーカーファイルが見つかりません: {worker_path}")
+                return None
+
+            # モジュールを動的にロード
+            spec = importlib.util.spec_from_file_location(f"{worker_name}_worker", worker_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            # ワーカークラスを探す（慣例: XxxYyyWorker）
+            class_name = "".join(word.capitalize() for word in worker_name.split("_")) + "Worker"
+
+            if not hasattr(module, class_name):
+                print(f"   [!] ワーカークラスが見つかりません: {class_name}")
+                return None
+
+            # インスタンス化
+            worker_class = getattr(module, class_name)
+            worker_instance = worker_class()
+
+            self.worker_instances[worker_name] = worker_instance
+            return worker_instance
+
+        except Exception as e:
+            print(f"   [!] ワーカーのロードに失敗: {worker_name}")
+            print(f"       エラー: {e}")
+            return None
 
     def _load_model_mapping(self) -> Dict[str, str]:
         """タスクタイプとモデルのマッピングを定義"""
@@ -121,14 +164,31 @@ class Orchestrator:
         elif any(keyword in task.lower() for keyword in ["プレゼン", "スライド", "pptx", "powerpoint"]):
             if any(keyword in task.lower() for keyword in ["構成", "提案", "アイデア"]):
                 task_type = "suggest_structure"
+                task_data = {
+                    "type": task_type,
+                    "topic": "プレゼンテーション",
+                    "audience": "一般",
+                    "duration": 15,
+                    "description": "プレゼン構成を提案する"
+                }
             else:
                 task_type = "create_presentation"
+                task_data = {
+                    "type": task_type,
+                    "topic": "プレゼンテーション",
+                    "output_path": "presentation.pptx",
+                    "slides": [
+                        {"layout": "title", "title": "プレゼンテーション", "subtitle": "サンプル"},
+                        {"layout": "content", "title": "内容", "content": "自動生成されたプレゼンです"}
+                    ],
+                    "description": "プレゼン資料を作成する"
+                }
 
             subtasks.append({
                 "type": task_type,
                 "worker": "presentation_builder",
                 "description": "プレゼン資料を作成する",
-                "task": task,
+                **task_data,
                 "model": self._determine_model(task_type)
             })
 
@@ -136,14 +196,53 @@ class Orchestrator:
         elif any(keyword in task.lower() for keyword in ["文書", "ドキュメント", "word", "報告書", "議事録", "提案書"]):
             if any(keyword in task.lower() for keyword in ["構成", "提案", "アイデア"]):
                 task_type = "suggest_structure"
+                task_data = {
+                    "type": task_type,
+                    "doc_type": "report",
+                    "topic": "報告書",
+                    "purpose": "情報共有",
+                    "description": "文書構成を提案する"
+                }
             else:
                 task_type = "create_document"
+                # 文書タイプを判定
+                if "議事録" in task.lower():
+                    doc_type = "minutes"
+                    title = "議事録"
+                elif "提案書" in task.lower():
+                    doc_type = "proposal"
+                    title = "提案書"
+                else:
+                    doc_type = "report"
+                    title = "報告書"
+
+                task_data = {
+                    "type": task_type,
+                    "doc_type": doc_type,
+                    "title": title,
+                    "output_path": f"{title}.docx",
+                    "content": {
+                        "metadata": {
+                            "company": "株式会社サンプル",
+                            "author": "システム",
+                            "date": "2025年1月"
+                        },
+                        "sections": [
+                            {
+                                "title": "概要",
+                                "type": "content",
+                                "content": "自動生成された文書です。"
+                            }
+                        ]
+                    },
+                    "description": "文書を作成する"
+                }
 
             subtasks.append({
                 "type": task_type,
                 "worker": "document_writer",
                 "description": "文書を作成する",
-                "task": task,
+                **task_data,
                 "model": self._determine_model(task_type)
             })
 
@@ -213,26 +312,64 @@ class Orchestrator:
         results = []
         for step in plan:
             model = step.get('model', 'sonnet')
-            print(f"\n   ステップ {step['step']}: {step['worker']} ({model}) を実行中...")
+            worker_name = step['worker']
+            print(f"\n   ステップ {step['step']}: {worker_name} ({model}) を実行中...")
 
-            # ワーカーの実行をシミュレート
-            # 実際の実装では、ワーカーのモジュールをインポートして実行
-            # モデル情報をワーカーに渡す
-            result = {
-                "step": step['step'],
-                "worker": step['worker'],
-                "model": model,
-                "status": "success",
-                "output": f"[{step['worker']}] タスク '{step['task']['description']}' を完了しました",
-                "details": {
-                    "task": step['task'],
-                    "model_used": model,
-                    "message": "シミュレーション: 実際のワーカーはまだ実装されていません"
+            # ワーカーをロード
+            worker = self._load_worker(worker_name)
+
+            if worker is None:
+                # ワーカーがロードできない場合はスキップ
+                result = {
+                    "step": step['step'],
+                    "worker": worker_name,
+                    "model": model,
+                    "status": "error",
+                    "output": f"[{worker_name}] ワーカーのロードに失敗しました",
+                    "details": {
+                        "task": step['task'],
+                        "model_used": model,
+                        "error": "ワーカーがロードできませんでした"
+                    }
                 }
-            }
+            else:
+                try:
+                    # ワーカーを実行
+                    # タスク情報をワーカーに渡す
+                    task_data = step['task']
+                    worker_result = worker.execute(task_data)
+
+                    result = {
+                        "step": step['step'],
+                        "worker": worker_name,
+                        "model": model,
+                        "status": worker_result.get("status", "success"),
+                        "output": f"[{worker_name}] タスク '{task_data['description']}' を完了しました",
+                        "details": {
+                            "task": task_data,
+                            "model_used": model,
+                            "worker_output": worker_result
+                        }
+                    }
+
+                    print(f"   [+] {worker_name} ({model}) 完了")
+
+                except Exception as e:
+                    result = {
+                        "step": step['step'],
+                        "worker": worker_name,
+                        "model": model,
+                        "status": "error",
+                        "output": f"[{worker_name}] 実行中にエラーが発生しました",
+                        "details": {
+                            "task": step['task'],
+                            "model_used": model,
+                            "error": str(e)
+                        }
+                    }
+                    print(f"   [!] {worker_name} エラー: {e}")
 
             results.append(result)
-            print(f"   [+] {step['worker']} ({model}) 完了")
 
         return results
 
