@@ -1,0 +1,112 @@
+{
+  "title": {
+    "name": "タイトルスライド",
+    "description": "プレゼンの表紙",
+    "elements": ["title", "subtitle", "author", "date"],
+    "usage": "プレゼンテーションの最初のスライド",
+    "best_practices": [
+      "タイトルは簡潔に（10文字以内が理想）",
+      "サブタイトルで補足情報を提供",
+      "発表者名と日付を必ず含める"
+    ]
+  },
+  "section": {
+    "name": "セクション区切り",
+    "description": "大きな区切りを示すスライド",
+    "elements": ["section_title", "section_number"],
+    "usage": "プレゼンの章立てを明確にする",
+    "best_practices": [
+      "セクション番号を表示（例: 第1章）",
+      "大きなフォントで視覚的に区切る",
+      "色を変えて区別する"
+    ]
+  },
+  "content": {
+    "name": "コンテンツスライド",
+    "description": "通常のコンテンツ",
+    "elements": ["title", "body"],
+    "usage": "最も汎用的なスライド",
+    "best_practices": [
+      "タイトルでスライドの内容を要約",
+      "本文は3-5行程度に抑える",
+      "キーワードを太字で強調"
+    ]
+  },
+  "two_column": {
+    "name": "2カラム",
+    "description": "左右に内容を配置",
+    "elements": ["title", "left_content", "right_content"],
+    "usage": "比較、対比、Before/Afterなど",
+    "best_practices": [
+      "左右の内容量を均等にする",
+      "対比する要素を明確にする",
+      "視線の流れを意識（左→右）"
+    ]
+  },
+  "bullet_points": {
+    "name": "箇条書き",
+    "description": "ポイントを列挙",
+    "elements": ["title", "bullets"],
+    "usage": "複数のポイントを並列に提示",
+    "best_practices": [
+      "箇条書きは3-7個まで（7±2の法則）",
+      "各項目は1行で完結させる",
+      "重要度順に並べる"
+    ]
+  },
+  "image_caption": {
+    "name": "画像+説明",
+    "description": "ビジュアル重視",
+    "elements": ["title", "image", "caption"],
+    "usage": "図表やグラフを説明",
+    "best_practices": [
+      "画像は高解像度を使用",
+      "キャプションで要点を説明",
+      "出典を明記"
+    ]
+  },
+  "conclusion": {
+    "name": "まとめ",
+    "description": "結論・まとめスライド",
+    "elements": ["title", "key_points", "next_steps"],
+    "usage": "プレゼンの締めくくり",
+    "best_practices": [
+      "重要ポイントを3つに絞る",
+      "次のアクションを明確にする",
+      "期限と担当を記載"
+    ]
+  },
+  "agenda": {
+    "name": "アジェンダ",
+    "description": "本日の流れを提示",
+    "elements": ["title", "agenda_items", "timing"],
+    "usage": "プレゼンの冒頭で全体像を示す",
+    "best_practices": [
+      "3-5個のトピックに絞る",
+      "各トピックの所要時間を記載",
+      "番号を振って順序を明確にする"
+    ]
+  },
+  "data_chart": {
+    "name": "データ・グラフ",
+    "description": "数値データを視覚化",
+    "elements": ["title", "chart", "insight", "source"],
+    "usage": "データに基づく説明",
+    "best_practices": [
+      "グラフの種類を適切に選択（棒、折れ線、円）",
+      "インサイト（読み取るべきポイント）を明記",
+      "データの出典を記載"
+    ]
+  },
+  "quote": {
+    "name": "引用",
+    "description": "重要な言葉を強調",
+    "elements": ["quote_text", "author", "context"],
+    "usage": "権威付け、インパクトの演出",
+    "best_practices": [
+      "短い引用（1-2文）を選ぶ",
+      "大きなフォントで表示",
+      "発言者の肩書きを記載"
+    ]
+  }
+}
