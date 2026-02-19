@@ -6,10 +6,18 @@
 
 ### 1. 準備
 
+ファイルが既に存在する場合は連番サフィックスを付与して新規作成する（上書き禁止）。
+
 ```bash
 mkdir -p ideas/daily
 TODAY=$(date +%Y%m%d)
-OUTPUT="ideas/daily/${TODAY}-trend.md"
+BASE="ideas/daily/${TODAY}-trend"
+OUTPUT="${BASE}.md"
+n=2
+while [ -f "$OUTPUT" ]; do
+  OUTPUT="${BASE}-${n}.md"
+  n=$((n+1))
+done
 ```
 
 ### 2. データ収集
@@ -119,7 +127,7 @@ done
 
 ### 3. 結果をMarkdownに保存
 
-収集したデータをまとめて以下の形式で `ideas/daily/YYYYMMDD-trend.md` に保存すること：
+収集したデータをまとめて以下の形式で保存すること：
 
 ```markdown
 # トレンドネタ収集 YYYY-MM-DD
@@ -144,9 +152,36 @@ done
 2. ...
 ```
 
-### 4. 完了報告
+### 4. My-Tasks に発信候補をまとめて Issue 登録
 
-保存したファイルパスと、発信候補のサマリーを報告する。
+発信候補 Top 5 を1件の Issue として `banapagg/My-Tasks` に登録し、Project 1 に追加する。
+
+```bash
+ISSUE_URL=$(gh issue create \
+  --repo banapagg/My-Tasks \
+  --title "【ネタ候補】$(date +%Y-%m-%d) トレンド収集" \
+  --label "type:idea" \
+  --body "## 収集日
+$(date +%Y-%m-%d)
+
+## ソース
+- はてブ IT ホットエントリ
+- Hacker News Top
+- Reddit r/programming
+- セキュリティブログ
+
+## 発信候補 Top 5
+（発信候補 Top 5 の内容をここに記載）
+
+## 収集ファイル
+ideas/daily/$(date +%Y%m%d)-trend.md")
+
+gh project item-add 1 --owner banapagg --url "$ISSUE_URL"
+```
+
+### 5. 完了報告
+
+保存したファイルパス・作成した Issue URL・発信候補のサマリーを報告する。
 
 ## 注意事項
 
@@ -154,3 +189,4 @@ done
 - 各ソースの取得失敗は無視してスキップ（エラーメッセージは出力しない）
 - Reddit は `old.reddit.com` の JSON エンドポイントを使用（`www.reddit.com` は403になる）
 - User-Agent ヘッダー（`-A "Mozilla/5.0"`）を必ず付与する
+- **既存ファイルは上書きしない**（同日2回目以降は `-2`, `-3` ... と連番を付ける）
