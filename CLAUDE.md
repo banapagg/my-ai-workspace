@@ -171,4 +171,3 @@ cp ../templates/base_config.json new-project/mcp_config.json
 **Do:**
 - 作業ブランチを作成してから実装する（例: `feature/xxx`, `fix/xxx`）
 - ブランチへ push し、PR 作成の準備を整えたところで完了とする
-- PR のマージはユーザーが行う
