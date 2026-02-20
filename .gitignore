@@ -22,3 +22,7 @@ Thumbs.db
 dist/
 build/
 *.pyc
+
+# 生成ファイル
+tmp/
+slides/*.pptx

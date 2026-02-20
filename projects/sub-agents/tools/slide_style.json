@@ -1,0 +1,12 @@
+{
+  "default": {
+    "primary_color": "2563EB",
+    "secondary_color": "F59E0B",
+    "background_color": "FFFFFF",
+    "text_color": "1E293B",
+    "title_font_size": 36,
+    "body_font_size": 18,
+    "slide_width_inches": 13.33,
+    "slide_height_inches": 7.5
+  }
+}
